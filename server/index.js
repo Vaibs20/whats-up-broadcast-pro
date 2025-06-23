@@ -39,7 +39,16 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://wbc.trizenventures.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+}));
+
+// Optional: Handle OPTIONS requests globally (if needed)
+app.options('*', cors());
+
 app.use(express.json());
 
 // Session middleware for OAuth
