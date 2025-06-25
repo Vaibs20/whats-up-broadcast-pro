@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
       .populate('templateId', 'name body')
       .populate('contacts', 'name phone')
       .sort({ createdAt: -1 });
-    
+
     res.json(campaigns);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -27,11 +27,11 @@ router.get('/:id', async (req, res) => {
     const campaign = await Campaign.findById(req.params.id)
       .populate('templateId')
       .populate('contacts');
-    
+
     if (!campaign) {
       return res.status(404).json({ error: 'Campaign not found' });
     }
-    
+
     res.json(campaign);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -122,8 +122,8 @@ router.put('/:id', async (req, res) => {
 
     // Don't allow updates to campaigns that are already sending or completed
     if (['sending', 'completed'].includes(campaign.status)) {
-      return res.status(400).json({ 
-        error: 'Cannot update campaign that is sending or completed' 
+      return res.status(400).json({
+        error: 'Cannot update campaign that is sending or completed'
       });
     }
 
@@ -150,13 +150,13 @@ router.put('/:id', async (req, res) => {
 router.post('/:id/cancel', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     await cancelCampaign(id);
-    
+
     const campaign = await Campaign.findById(id)
       .populate('templateId', 'name body')
       .populate('contacts', 'name phone');
-    
+
     res.json(campaign);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -167,7 +167,7 @@ router.post('/:id/cancel', async (req, res) => {
 router.post('/:id/pause', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const campaign = await Campaign.findById(id);
     if (!campaign) {
       return res.status(404).json({ error: 'Campaign not found' });
@@ -190,7 +190,7 @@ router.post('/:id/pause', async (req, res) => {
 router.post('/:id/resume', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const campaign = await Campaign.findById(id);
     if (!campaign) {
       return res.status(404).json({ error: 'Campaign not found' });
@@ -243,7 +243,7 @@ router.get('/:id/messages', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const campaign = await Campaign.findById(id);
     if (!campaign) {
       return res.status(404).json({ error: 'Campaign not found' });

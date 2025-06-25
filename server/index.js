@@ -1,11 +1,9 @@
+import './env.js';
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import session from 'express-session';
 import passport, { initializeOAuthStrategies } from './config/passport.js';
 import authRoutes from './routes/auth.js';
@@ -16,15 +14,14 @@ import n8nRoutes from './routes/n8n.js';
 import { initializeScheduler } from './services/scheduler.js';
 import { setupSocketHandlers } from './services/socketService.js';
 
-// Fix for ES modules path resolution
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, '../.env') });
 
-// Debug environment variables loading
-console.log('Environment variables loaded:');
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'UNDEFINED');
-console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'UNDEFINED');
-console.log('NODE_ENV:', process.env.NODE_ENV);
+// // Debug environment variables loading
+// console.log('Environment variables loaded:');
+// console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'UNDEFINED');
+// console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'UNDEFINED');
+// console.log('NODE_ENV:', process.env.NODE_ENV);
+// console.log('process.cwd():', process.cwd());
+// console.log('dotenv loaded:', process.env.TWILIO_ACCOUNT_SID);
 
 // Initialize OAuth strategies after environment variables are loaded
 await initializeOAuthStrategies();
@@ -86,13 +83,12 @@ app.get('/api/health', (req, res) => {
 // Socket.IO setup
 setupSocketHandlers(io);
 
-// Initialize job scheduler
-initializeScheduler(io);
-
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  // Initialize job scheduler
+  initializeScheduler(io);
 });
 
 export { io };

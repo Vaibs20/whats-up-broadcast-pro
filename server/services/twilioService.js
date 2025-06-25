@@ -1,4 +1,3 @@
-
 import twilio from 'twilio';
 import Contact from '../models/Contact.js';
 import Template from '../models/Template.js';
@@ -9,14 +8,18 @@ const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER; // e.g., 'whatsapp:+14155238886'
 
+console.log('Initializing Twilio service...');
 let twilioClient;
-
 if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
   twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
   console.log('Twilio client initialized');
 } else {
   console.log('Twilio credentials not provided - Twilio service disabled');
 }
+
+console.log('TWILIO_ACCOUNT_SID:', process.env.TWILIO_ACCOUNT_SID);
+console.log('TWILIO_AUTH_TOKEN:', process.env.TWILIO_AUTH_TOKEN);
+console.log('TWILIO_WHATSAPP_NUMBER:', process.env.TWILIO_WHATSAPP_NUMBER);
 
 export const sendTwilioWhatsAppMessage = async (phoneNumber, message) => {
   try {
@@ -42,7 +45,7 @@ export const sendTwilioWhatsAppMessage = async (phoneNumber, message) => {
 
   } catch (error) {
     console.error('Twilio WhatsApp API error:', error);
-    
+
     return {
       success: false,
       error: error.message
@@ -79,11 +82,11 @@ export const sendCampaignMessagesTwilio = async (campaign, io) => {
 
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i];
-      
+
       try {
         // Create message record
         const messageContent = replaceVariables(template.body, campaign.variables, contact);
-        
+
         const message = new Message({
           campaignId: campaign._id,
           contactId: contact._id,
@@ -92,12 +95,12 @@ export const sendCampaignMessagesTwilio = async (campaign, io) => {
           status: 'pending',
           provider: 'twilio'
         });
-        
+
         await message.save();
 
         // Send Twilio WhatsApp message
         const twilioResponse = await sendTwilioWhatsAppMessage(contact.phone, messageContent);
-        
+
         if (twilioResponse.success) {
           message.status = 'sent';
           message.providerMessageId = twilioResponse.messageId;
@@ -108,7 +111,7 @@ export const sendCampaignMessagesTwilio = async (campaign, io) => {
           message.errorMessage = twilioResponse.error;
           campaign.progress.failed++;
         }
-        
+
         await message.save();
         await campaign.save();
 
@@ -127,18 +130,18 @@ export const sendCampaignMessagesTwilio = async (campaign, io) => {
 
       } catch (error) {
         console.error(`Error sending message to ${contact.phone}:`, error);
-        
+
         const message = await Message.findOne({
           campaignId: campaign._id,
           contactId: contact._id
         });
-        
+
         if (message) {
           message.status = 'failed';
           message.errorMessage = error.message;
           await message.save();
         }
-        
+
         campaign.progress.failed++;
         await campaign.save();
       }
@@ -158,33 +161,33 @@ export const sendCampaignMessagesTwilio = async (campaign, io) => {
 
   } catch (error) {
     console.error('Error in sendCampaignMessagesTwilio:', error);
-    
+
     campaign.status = 'failed';
     await campaign.save();
-    
+
     throw error;
   }
 };
 
 const replaceVariables = (template, variables, contact) => {
   let message = template;
-  
+
   // Replace campaign variables
   for (const [key, value] of variables) {
     const regex = new RegExp(`{{${key}}}`, 'g');
     message = message.replace(regex, value);
   }
-  
+
   // Replace contact-specific variables
   message = message.replace(/{{name}}/g, contact.name);
   message = message.replace(/{{phone}}/g, contact.phone);
   message = message.replace(/{{email}}/g, contact.email || '');
-  
+
   // Replace metadata variables
   for (const [key, value] of contact.metadata) {
     const regex = new RegExp(`{{${key}}}`, 'g');
     message = message.replace(regex, value);
   }
-  
+
   return message;
 };

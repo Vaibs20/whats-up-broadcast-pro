@@ -61,7 +61,7 @@ const campaignSchema = new mongoose.Schema({
   provider: {
     type: String,
     enum: ['whatsapp', 'twilio', 'auto'],
-    default: 'auto'
+    default: 'twilio'
   },
   // n8n integration fields
   n8nWorkflowId: {
