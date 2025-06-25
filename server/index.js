@@ -30,13 +30,22 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:8080",
+    origin: process.env.CLIENT_URL || "https://wbc.trizenventures.com/",
     methods: ["GET", "POST"]
   }
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://wbc.trizenventures.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+}));
+
+// Optional: Handle OPTIONS requests globally (if needed)
+app.options('*', cors());
+
 app.use(express.json());
 
 // Session middleware for OAuth
@@ -55,7 +64,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/whatsapp-broadcast', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://commonmail511:BI98nb9gfn987yDX@cluster0.1s50bav.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
