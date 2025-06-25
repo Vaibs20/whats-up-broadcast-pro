@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-# EXPOSE 5001
+
 EXPOSE 3001
-CMD ["node", "server.js"]
+
+CMD ["node", "server/index.js"]
