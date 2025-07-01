@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/services/api';
 
 interface User {
@@ -41,7 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for existing token on app load
@@ -58,11 +56,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.getCurrentUser(authToken);
       setUser(response.data.user);
-      // If user is authenticated and on a public route, redirect to dashboard
-      const publicRoutes = ['/', '/login', '/signup', '/forgot-password'];
-      if (publicRoutes.includes(window.location.pathname)) {
-        navigate('/dashboard');
-      }
     } catch (error) {
       console.error('Failed to fetch current user:', error);
       // Clear invalid token
@@ -77,11 +70,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.login(email, password);
       const { token: authToken, user: userData } = response.data;
-
+      
       setToken(authToken);
       setUser(userData);
       localStorage.setItem('authToken', authToken);
-      navigate('/dashboard');
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Login failed');
     }
@@ -91,11 +83,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authApi.register(userData);
       const { token: authToken, user: newUser } = response.data;
-
+      
       setToken(authToken);
       setUser(newUser);
       localStorage.setItem('authToken', authToken);
-      navigate('/dashboard');
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Registration failed');
     }
@@ -105,7 +96,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setToken(null);
     localStorage.removeItem('authToken');
-    navigate('/');
   };
 
   const value = {

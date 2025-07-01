@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import {
-  MessageSquare,
-  Eye,
-  EyeOff,
+import { 
+  MessageSquare, 
+  Eye, 
+  EyeOff, 
   Loader2,
   Github,
   Mail
@@ -21,15 +21,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  
   const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!email || !password) {
       toast({
         title: "Validation Error",
@@ -40,13 +42,14 @@ export default function Login() {
     }
 
     setLoading(true);
-
+    
     try {
       await login(email, password);
       toast({
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
+      navigate(from, { replace: true });
     } catch (error: any) {
       toast({
         title: "Login Failed",
@@ -86,7 +89,7 @@ export default function Login() {
               <Mail className="w-4 h-4 mr-2" />
               Continue with Google
             </Button>
-            {/* <Button
+            <Button
               type="button"
               variant="outline"
               className="w-full"
@@ -94,7 +97,7 @@ export default function Login() {
             >
               <Github className="w-4 h-4 mr-2" />
               Continue with GitHub
-            </Button> */}
+            </Button>
           </div>
 
           <div className="relative">
@@ -119,7 +122,7 @@ export default function Login() {
                 required
               />
             </div>
-
+            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -148,16 +151,16 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Link
-                to="/forgot-password"
+              <Link 
+                to="/forgot-password" 
                 className="text-sm text-green-600 hover:text-green-700 hover:underline"
               >
                 Forgot password?
               </Link>
             </div>
 
-            <Button
-              type="submit"
+            <Button 
+              type="submit" 
               className="w-full bg-green-600 hover:bg-green-700"
               disabled={loading}
             >
@@ -175,8 +178,8 @@ export default function Login() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link
-                to="/signup"
+              <Link 
+                to="/signup" 
                 className="text-green-600 hover:text-green-700 font-medium hover:underline"
               >
                 Sign up
