@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +23,7 @@ import { Link, useLocation } from "react-router-dom";
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: BarChart3,
   },
   {
@@ -79,8 +78,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
+                  <SidebarMenuButton
+                    asChild
                     isActive={location.pathname === item.url}
                     className="hover:bg-green-50 hover:text-green-700 data-[active=true]:bg-green-50 data-[active=true]:text-green-700"
                   >
