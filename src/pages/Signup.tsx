@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  MessageSquare, 
-  Eye, 
-  EyeOff, 
+import {
+  MessageSquare,
+  Eye,
+  EyeOff,
   Loader2,
   Github,
   Mail,
@@ -32,7 +32,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const { register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -46,7 +46,7 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       toast({
@@ -76,7 +76,7 @@ export default function Signup() {
     }
 
     setLoading(true);
-    
+
     try {
       await register({
         firstName: formData.firstName,
@@ -86,7 +86,7 @@ export default function Signup() {
         company: formData.company,
         phone: formData.phone
       });
-      
+
       toast({
         title: "Welcome!",
         description: "Your account has been created successfully.",
@@ -131,7 +131,7 @@ export default function Signup() {
               <Mail className="w-4 h-4 mr-2" />
               Continue with Google
             </Button>
-            <Button
+            {/* <Button
               type="button"
               variant="outline"
               className="w-full"
@@ -139,7 +139,7 @@ export default function Signup() {
             >
               <Github className="w-4 h-4 mr-2" />
               Continue with GitHub
-            </Button>
+            </Button> */}
           </div>
 
           <div className="relative">
@@ -187,7 +187,7 @@ export default function Signup() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
               <div className="relative">
@@ -236,7 +236,7 @@ export default function Signup() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
               <div className="relative">
@@ -293,8 +293,8 @@ export default function Signup() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-green-600 hover:bg-green-700"
               disabled={loading}
             >
@@ -312,8 +312,8 @@ export default function Signup() {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-green-600 hover:text-green-700 font-medium hover:underline"
               >
                 Sign in
