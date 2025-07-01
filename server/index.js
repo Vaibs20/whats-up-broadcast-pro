@@ -37,10 +37,8 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({
-  origin: 'https://wbc.trizenventures.com',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
 }));
 
 // Optional: Handle OPTIONS requests globally (if needed)
