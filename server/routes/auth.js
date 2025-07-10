@@ -14,14 +14,14 @@ router.post('/register', async (req, res) => {
 
     // Validation
     if (!email || !password || !firstName || !lastName) {
-      return res.status(400).json({ 
-        error: 'Email, password, first name, and last name are required' 
+      return res.status(400).json({
+        error: 'Email, password, first name, and last name are required'
       });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ 
-        error: 'Password must be at least 6 characters long' 
+      return res.status(400).json({
+        error: 'Password must be at least 6 characters long'
       });
     }
 
@@ -46,7 +46,7 @@ router.post('/register', async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
-    // Return user data (without password)
+    // Return user data
     const userData = {
       _id: user._id,
       email: user.email,
@@ -57,7 +57,7 @@ router.post('/register', async (req, res) => {
       role: user.role,
       company: user.company,
       phone: user.phone,
-      isEmailVerified: user.isEmailVerified,
+      lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt
     };
 
@@ -115,7 +115,6 @@ router.post('/login', async (req, res) => {
       role: user.role,
       company: user.company,
       phone: user.phone,
-      isEmailVerified: user.isEmailVerified,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt
     };
@@ -134,24 +133,13 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', authenticate, async (req, res) => {
   try {
-    const userData = {
-      _id: req.user._id,
-      email: req.user.email,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      fullName: req.user.fullName,
-      avatar: req.user.avatar,
-      role: req.user.role,
-      company: req.user.company,
-      phone: req.user.phone,
-      isEmailVerified: req.user.isEmailVerified,
-      lastLoginAt: req.user.lastLoginAt,
-      createdAt: req.user.createdAt
-    };
-
-    res.json({ user: userData });
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ user });
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Get current user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -162,7 +150,7 @@ router.post('/logout', authenticate, (req, res) => {
 });
 
 // Google OAuth routes
-router.get('/google', 
+router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
@@ -209,10 +197,10 @@ router.post('/forgot-password', async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     const user = await User.findOne({ email: normalizedEmail });
-    
+
     // Always return success message for security (don't reveal if user exists)
     const successMessage = 'If an account with that email exists, a password reset link has been sent.';
-    
+
     if (!user) {
       // Log the attempt for security monitoring
       console.log(`🔍 Password reset requested for non-existent email: ${normalizedEmail}`);
@@ -229,8 +217,8 @@ router.post('/forgot-password', async (req, res) => {
     const recentResetTime = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
     if (user.resetPasswordExpires && user.resetPasswordExpires > recentResetTime) {
       console.log(`⏰ Rate limited password reset for: ${normalizedEmail}`);
-      return res.status(429).json({ 
-        error: 'Please wait 5 minutes before requesting another password reset' 
+      return res.status(429).json({
+        error: 'Please wait 5 minutes before requesting another password reset'
       });
     }
 
@@ -246,39 +234,39 @@ router.post('/forgot-password', async (req, res) => {
     try {
       // Send professional password reset email
       const emailResult = await sendPasswordResetEmail(normalizedEmail, resetToken);
-      
+
       console.log(`✅ Password reset email sent successfully to ${normalizedEmail}`);
       console.log('Email service response:', emailResult);
-      
+
       res.json({ message: successMessage });
     } catch (emailError) {
       console.error('❌ Failed to send password reset email:', emailError);
-      
+
       // Clear the reset token if email sending fails
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       await user.save();
-      
+
       // Return appropriate error message
       if (emailError.message.includes('Authentication failed')) {
-        return res.status(500).json({ 
-          error: 'Email service configuration error. Please contact support.' 
+        return res.status(500).json({
+          error: 'Email service configuration error. Please contact support.'
         });
       } else if (emailError.message.includes('Connection failed')) {
-        return res.status(500).json({ 
-          error: 'Unable to send email at this time. Please try again later.' 
+        return res.status(500).json({
+          error: 'Unable to send email at this time. Please try again later.'
         });
       }
-      
-      return res.status(500).json({ 
-        error: 'Failed to send password reset email. Please try again later.' 
+
+      return res.status(500).json({
+        error: 'Failed to send password reset email. Please try again later.'
       });
     }
 
   } catch (error) {
     console.error('💥 Forgot password route error:', error);
-    res.status(500).json({ 
-      error: 'An unexpected error occurred. Please try again later.' 
+    res.status(500).json({
+      error: 'An unexpected error occurred. Please try again later.'
     });
   }
 });
@@ -293,8 +281,8 @@ router.post('/reset-password', async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ 
-        error: 'Password must be at least 6 characters long' 
+      return res.status(400).json({
+        error: 'Password must be at least 6 characters long'
       });
     }
 
@@ -304,8 +292,8 @@ router.post('/reset-password', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ 
-        error: 'Invalid or expired reset token' 
+      return res.status(400).json({
+        error: 'Invalid or expired reset token'
       });
     }
 

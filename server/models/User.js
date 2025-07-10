@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: function() {
+    required: function () {
       return !this.googleId && !this.githubId;
     }
   },
@@ -32,10 +32,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'user', 'manager'],
     default: 'user'
-  },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
   },
   // Social login fields
   googleId: {
@@ -69,13 +65,6 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordExpires: {
     type: Date
-  },
-  // Email verification
-  emailVerificationToken: {
-    type: String
-  },
-  emailVerificationExpires: {
-    type: Date
   }
 }, {
   timestamps: true
@@ -83,22 +72,22 @@ const userSchema = new mongoose.Schema({
 
 // Indexes
 userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
-userSchema.index({ githubId: 1 });
+userSchema.index({ googleId: 1 }, { sparse: true });
+userSchema.index({ githubId: 1 }, { sparse: true });
 userSchema.index({ resetPasswordToken: 1 });
-userSchema.index({ emailVerificationToken: 1 });
 
 // Virtual for full name
-userSchema.virtual('fullName').get(function() {
+userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) {
+    return next();
+  }
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -107,20 +96,25 @@ userSchema.pre('save', async function(next) {
 });
 
 // Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  if (!this.password) return false;
-  return bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw error;
+  }
 };
 
 // Generate initials for avatar
-userSchema.methods.getInitials = function() {
+userSchema.methods.getInitials = function () {
   return `${this.firstName.charAt(0)}${this.lastName.charAt(0)}`.toUpperCase();
 };
 
 // Update last login
-userSchema.methods.updateLastLogin = function() {
+userSchema.methods.updateLastLogin = async function () {
   this.lastLoginAt = new Date();
   return this.save();
 };
 
-export default mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+export default User;

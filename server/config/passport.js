@@ -65,7 +65,6 @@ export const initializeOAuthStrategies = async () => {
           if (user) {
             user.googleId = profile.id;
             user.avatar = profile.photos[0]?.value;
-            user.isEmailVerified = true;
             await user.save();
             await user.updateLastLogin();
             return done(null, user);
@@ -76,8 +75,7 @@ export const initializeOAuthStrategies = async () => {
             email: profile.emails[0].value,
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
-            avatar: profile.photos[0]?.value,
-            isEmailVerified: true
+            avatar: profile.photos[0]?.value
           });
 
           await user.save();
@@ -119,7 +117,6 @@ export const initializeOAuthStrategies = async () => {
             if (user) {
               user.githubId = profile.id;
               user.avatar = profile.photos[0]?.value;
-              user.isEmailVerified = true;
               await user.save();
               await user.updateLastLogin();
               return done(null, user);
@@ -132,8 +129,7 @@ export const initializeOAuthStrategies = async () => {
             email: email || `${profile.username}@github.local`,
             firstName: names[0] || profile.username,
             lastName: names.slice(1).join(' ') || '',
-            avatar: profile.photos[0]?.value,
-            isEmailVerified: !!email
+            avatar: profile.photos[0]?.value
           });
 
           await user.save();

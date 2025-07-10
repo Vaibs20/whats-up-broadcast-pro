@@ -37,16 +37,23 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({
-  origin: 'https://wbc.trizenventures.com',
+  origin: [
+    'https://wbc.trizenventures.com',
+    'https://wboardcast.llp.trizenventures.com',
+    'http://localhost:8080',
+    'http://localhost:5173'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
 }));
 
-// Optional: Handle OPTIONS requests globally (if needed)
+// Optional: Handle OPTIONS requests globally
 app.options('*', cors());
 
+// Body parser middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Session middleware for OAuth
 app.use(session({
@@ -59,23 +66,8 @@ app.use(session({
   }
 }));
 
-// Passport middleware
+// Initialize passport
 app.use(passport.initialize());
-app.use(passport.session());
-
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://commonmail511:BI98nb9gfn987yDX@cluster0.1s50bav.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -92,12 +84,22 @@ app.get('/api/health', (req, res) => {
 // Socket.IO setup
 setupSocketHandlers(io);
 
-const PORT = process.env.PORT || 3001;
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
 
+    // Initialize scheduler after DB connection
+    initializeScheduler();
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+  });
+
+// Start server
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  // Initialize job scheduler
-  initializeScheduler(io);
 });
 
 export { io };
